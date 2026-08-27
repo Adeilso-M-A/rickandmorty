@@ -225,8 +225,11 @@ fun CharacterDetailScreen(id: Int, repository: RickRepository) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = it.name, style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Status: ${it.status}")
             Text(text = "Espécie: ${it.species}")
+            Text(text = "Gênero: ${if (it.gender.isNotEmpty()) it.gender else "Desconhecido"}")
+            Text(text = "Origem: ${if (it.origin.isNotEmpty()) it.origin else "Desconhecida"}")
         }
     }
 }

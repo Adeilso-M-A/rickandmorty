@@ -1,8 +1,9 @@
 package br.com.curso.rickandmorty.ui
 
 import android.Manifest
-import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import br.com.curso.rickandmorty.data.repository.RickRepository
+import br.com.curso.rickandmorty.service.SyncForegroundService
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
@@ -107,7 +109,17 @@ fun MyPortalScreen(repository: RickRepository, onLogout: () -> Unit) {
         }
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
     LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             try {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -150,11 +162,12 @@ fun MyPortalScreen(repository: RickRepository, onLogout: () -> Unit) {
 
         Button(
             onClick = {
-                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                val serviceIntent = Intent(context, SyncForegroundService::class.java)
+                ContextCompat.startForegroundService(context, serviceIntent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Localizar Meu Portal")
+            Text("Sincronizar Agora")
         }
 
         Spacer(modifier = Modifier.height(12.dp))
