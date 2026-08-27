@@ -17,31 +17,61 @@ class RickRepository(
     val allEpisodes: Flow<List<EpisodeEntity>> = dao.getAllEpisodes()
     val portalLocation: Flow<PortalLocationEntity?> = dao.getPortalLocation()
 
-    suspend fun getCharacterById(id: Int): CharacterEntity? {
-        return dao.getCharacterById(id)
+    suspend fun refreshCharacters() {
+        try {
+            val response = api.getCharacters()
+            val entities = response.results.map { dto ->
+                CharacterEntity(
+                    id = dto.id,
+                    name = dto.name,
+                    status = dto.status,
+                    species = dto.species,
+                    imageUrl = dto.image
+                )
+            }
+            dao.insertCharacters(entities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    suspend fun getLocationById(id: Int): LocationEntity? {
-        return dao.getLocationById(id)
+    suspend fun refreshLocations() {
+        try {
+            val response = api.getLocations()
+            val entities = response.results.map { dto ->
+                LocationEntity(
+                    id = dto.id,
+                    name = dto.name,
+                    type = dto.type,
+                    dimension = dto.dimension,
+                    residents = dto.residents.size
+                )
+            }
+            dao.insertLocations(entities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    suspend fun getEpisodeById(id: Int): EpisodeEntity? {
-        return dao.getEpisodeById(id)
+    suspend fun refreshEpisodes() {
+        try {
+            val response = api.getEpisodes()
+            val entities = response.results.map { dto ->
+                EpisodeEntity(
+                    id = dto.id,
+                    name = dto.name,
+                    airDate = dto.air_date,
+                    episode = dto.episode,
+                    characters = dto.characters.size
+                )
+            }
+            dao.insertEpisodes(entities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    suspend fun insertCharacters(characters: List<CharacterEntity>) {
-        dao.insertCharacters(characters)
-    }
-
-    suspend fun insertLocations(locations: List<LocationEntity>) {
-        dao.insertLocations(locations)
-    }
-
-    suspend fun insertEpisodes(episodes: List<EpisodeEntity>) {
-        dao.insertEpisodes(episodes)
-    }
-
-    suspend fun savePortalLocation(location: PortalLocationEntity) {
-        dao.insertPortalLocation(location)
-    }
+    suspend fun getCharacterById(id: Int): CharacterEntity? = dao.getCharacterById(id)
+    suspend fun getLocationById(id: Int): LocationEntity? = dao.getLocationById(id)
+    suspend fun getEpisodeById(id: Int): EpisodeEntity? = dao.getEpisodeById(id)
 }
